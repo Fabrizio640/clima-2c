@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './App.css'
-import { CloudSun,  MapPinned } from 'lucide-react';
+import { CloudSun, MapPinned, Thermometer, Droplet, Wind } from 'lucide-react';
 
 function App() {
   const [cidade, setCidade] = useState('');
@@ -12,33 +12,41 @@ function App() {
   const buscarClima = async () => {
     //validação do campo vazio da cidade
     if (!cidade.trim()){
-      setErro('Por favor, digite uma cidade');
+      setErro('❗ Por favor, digite uma cidade');
       return;
     }
 
     setCarregando(true);
     setErro('');
 
-    //try Executa os comandos
+    // Try Executa os comandos
     try{
-      const API_KEY ="";
-      const url ="";
+      const API_KEY = "50878f4678cd0841144b44b2fca0ccc0";
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${cidade}&appid=${API_KEY}&units=metric&lang=pt_br`;
       const resposta = await fetch(url);
 
       if(!resposta.ok){
-        throw new Error('Cidade não encontrada');
+        throw new Error('❗ Cidade não encontrada');
       }
 
       const dados = await resposta.json();
       setClima(dados);
 
     }catch (error){
-      setErro(error.menssage);
+      setErro(error.message);
       setClima(null);
     }finally{
       setCarregando(false);
     }
-  }
+  };
+
+  const handleKeyPress = (e) =>{
+    if (e.key === "Enter"){
+      buscarClima();
+    }
+  };
+
+
   return (
     <>
       <div className="container">
@@ -51,29 +59,41 @@ function App() {
             <p>Exemplo de consumo de API com React</p>
           </header>
           
+          {/* Caixa de Busca */}
           <div className="busca-box">
             <div className="busca-container">
               <input 
                 type="text"
                 placeholder="Digite o nome da cidade.."
+                value={cidade}
+                onChange={(e) => setCidade(e.target.value)}
+                onKeyDown={handleKeyPress}
               />
-            <button>Buscar</button>
+              <button
+                onClick={buscarClima}
+                disabled={carregando}
+              >
+                {carregando ? "Buscando..." : "Buscar"}
+              </button>
+            </div>
+            {/* Mensagem de Erro  */}
+            {erro && <div className="erro-msg">{erro}</div>}
           </div>
-          </div>
-
-          {/* Resultado do clima */}
+           
+          {clima && (<>
+          {/* Resultado do Clima */}
           <div id="card-resultado">
             <div id="cidade-info">
               <div id="cidade-nome">
-              <MapPinned style={{color: '#550808ff'}} size={48} />
-                Campinas, BR
+                <MapPinned style={{color: '#550808ff'}} size={48} />
+                {clima.name}, {clima.sys.country}
               </div>
               <p id="cidade-desc">
-                Nublado
+                {clima.weather[0].description}
               </p>
-            </div>
+            </div> {/* Fecha #cidade-desc*/}
 
-            {/* Temperatura principapl */}
+            {/* Temperatura principal */}
             <div id="temperatura-box">
               <div id="temp-valor">21°C</div>
               <div id="temp-sens">
@@ -81,7 +101,49 @@ function App() {
               </div>
             </div>
 
-          </div>
+            <div id="detalhes-box">
+              
+              <div className="detal-item">{/* Inicio Temperatura */}
+                <div className="detal-icone">
+                  <Thermometer />
+                </div>
+                <p className="detal-texto">
+                  Min/Max
+                </p>
+                <p className="detal-valor">
+                  23ºC/27ºC
+                </p>
+              </div>{/* Fim Temperatura */}
+
+              <div className="detal-item">{/* Inicio Umidade */}
+                <div className="detal-icone">
+                  <Droplet />
+                </div>
+                <p className="detal-texto">
+                  Umidade
+                </p>
+                <p className="detal-valor">
+                  12%
+                </p>
+              </div>{/* Fim Umidade */}
+
+              <div className="detal-item">{/* Inicio Vento */}
+                <div className="detal-icone">
+                  <Wind />
+                </div>
+                <p className="detal-texto">
+                  Vento
+                </p>
+                <p className="detal-valor">
+                  12 km/h
+                </p>
+              </div>{/* Fim Vento */}
+
+            </div>
+
+
+          </div> {/* Fecha #card-resultado */}
+          </>)};
         </div>
       </div>
     </>
